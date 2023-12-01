@@ -4,6 +4,7 @@ import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
 public class BattleFieldObject {
     protected Position position;
+    protected boolean collision = true;
 
     public BattleFieldObject(Position position) {
         this.position = position;
@@ -15,6 +16,14 @@ public class BattleFieldObject {
 
     public void setPosition(Position position) {
         this.position = position;
+    }
+
+    public boolean isCollision() {
+        return collision;
+    }
+
+    public void setCollision(boolean collision) {
+        this.collision = collision;
     }
 
     public boolean intersects(Position p) {

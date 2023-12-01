@@ -58,19 +58,16 @@ public class ConsoleField {
                 }
                 updateField();
             }
-            printField();
             if (!flag) {
                 break;
             }
             flag = false;
         }
-
-        printField();
     }
 
     private void inputActions(Tank tank) {
         if (tank.isFire()) {
-            if (tank.getBullets().size() != 0) {
+            if (!tank.getBullets().isEmpty()) {
                 for (int i = 0; i < tank.getBullets().size(); i++) {
                     int size = tank.getBullets().size();
                     game.destroyObjectsByBullet();

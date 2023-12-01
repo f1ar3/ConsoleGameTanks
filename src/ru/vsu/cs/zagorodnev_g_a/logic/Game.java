@@ -1,9 +1,8 @@
 package ru.vsu.cs.zagorodnev_g_a.logic;
 
+import ru.vsu.cs.zagorodnev_g_a.objects.immovable.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
-import ru.vsu.cs.zagorodnev_g_a.objects.immovable.Eagle;
-import ru.vsu.cs.zagorodnev_g_a.objects.immovable.IndestructibleWall;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Bullet;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.MoveDirections;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
@@ -17,11 +16,11 @@ public class Game {
     private List<BattleFieldObject> tanks = new ArrayList<>();
     private List<BattleFieldObject> walls = new ArrayList<>();
     private List<BattleFieldObject> indestructibleWalls = new ArrayList<>();
-    private List<BattleFieldObject> lakes = new ArrayList<>();
-    private List<BattleFieldObject> thickets = new ArrayList<>();
+    private List<BattleFieldObject> water = new ArrayList<>();
+    private List<BattleFieldObject> forest = new ArrayList<>();
     private List<BattleFieldObject> eagles = new ArrayList<>();
     private List<Turn> turns = new ArrayList<>();
-    private final int velocity = 50;
+    private final int velocity = 1;
     private boolean condition;
 
     public List<Turn> getTurns() {
@@ -76,20 +75,20 @@ public class Game {
         this.indestructibleWalls = indestructibleWalls;
     }
 
-    public List<BattleFieldObject> getLakes() {
-        return lakes;
+    public List<BattleFieldObject> getWater() {
+        return water;
     }
 
-    public void setLakes(List<BattleFieldObject> lakes) {
-        this.lakes = lakes;
+    public void setLakes(List<BattleFieldObject> water) {
+        this.water = water;
     }
 
-    public List<BattleFieldObject> getThickets() {
-        return thickets;
+    public List<BattleFieldObject> getForest() {
+        return forest;
     }
 
-    public void setThickets(List<BattleFieldObject> thickets) {
-        this.thickets = thickets;
+    public void setForest(List<BattleFieldObject> forest) {
+        this.forest = forest;
     }
 
     public List<BattleFieldObject> getEagles() {
@@ -177,41 +176,43 @@ public class Game {
         return false;
     }
 
-    private boolean isLayering(Tank tank, List<BattleFieldObject> list, int changeX, int changeY) {
+    private boolean isCollision(Tank tank, List<BattleFieldObject> list, int changeX, int changeY) {
         for (BattleFieldObject object : list) {
-            if (object.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))) {
-                return false;
+            if (object.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))
+                    && (object instanceof Wall || object instanceof IndestructibleWall || object instanceof Water)) {
+                object.setCollision(true);
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
-    public void moveInViewOfLayering(int changeX, int changeY, int numberOfPlayer) {
+    public void moveInViewOfCollision(int changeX, int changeY, int numberOfPlayer) {
         for (int j = 0; j < players.size(); j++) {
-            if (isLayering(players.get(numberOfPlayer).getTank(), walls, changeX, changeY)
-                    && isLayering(players.get(numberOfPlayer).getTank(), indestructibleWalls, changeX, changeY)
-                    && isLayering(players.get(numberOfPlayer).getTank(), lakes, changeX, changeY)
-                    && isLayering(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY)
-                    && !pairTankLayering(players.get(numberOfPlayer), players.get(j), changeX, changeY) && numberOfPlayer != j) {
+            if (!isCollision(players.get(numberOfPlayer).getTank(), walls, changeX, changeY)
+                    && !isCollision(players.get(numberOfPlayer).getTank(), indestructibleWalls, changeX, changeY)
+                    && !isCollision(players.get(numberOfPlayer).getTank(), water, changeX, changeY)
+                    && !tanksCollision(players.get(numberOfPlayer), players.get(j), changeX, changeY) && numberOfPlayer != j) {
                 players.get(numberOfPlayer).getTank().move();
             }
         }
     }
 
-    private boolean pairTankLayering(Player player1, Player player2, int changeX, int changeY) {
+    private boolean tanksCollision(Player player1, Player player2, int changeX, int changeY) {
         if (player1.isCondition() && player2.isCondition()) {
             return player2.getTank().intersects(new Position(player1.getTank().getPosition().x() + changeX, player1.getTank().getPosition().y() + changeY));
         }
         return false;
     }
 
+
     public void restart(){
         players.clear();
         tanks.clear();
         walls.clear();
         indestructibleWalls.clear();
-        lakes.clear();
-        thickets.clear();
+        water.clear();
+        forest.clear();
         eagles.clear();
     }
 
@@ -226,7 +227,7 @@ public class Game {
             turns.get(indexOfPlayer).setDirection(MoveDirections.LEFT);
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfLayering(-velocity, 0, indexOfPlayer);
+                moveInViewOfCollision(-velocity, 0, indexOfPlayer);
             }
         }
     }
@@ -238,7 +239,7 @@ public class Game {
             turns.get(indexOfPlayer).setDirection(MoveDirections.RIGHT);
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfLayering(velocity, 0, indexOfPlayer);
+                moveInViewOfCollision(velocity, 0, indexOfPlayer);
             }
         }
     }
@@ -250,7 +251,7 @@ public class Game {
             turns.get(indexOfPlayer).setDirection(MoveDirections.UP);
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfLayering(0, -velocity, indexOfPlayer);
+                moveInViewOfCollision(0, -velocity, indexOfPlayer);
             }
         }
     }
@@ -262,7 +263,7 @@ public class Game {
             turns.get(indexOfPlayer).setDirection(MoveDirections.DOWN);
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfLayering(0, velocity, indexOfPlayer);
+                moveInViewOfCollision(0, velocity, indexOfPlayer);
             }
         }
     }
