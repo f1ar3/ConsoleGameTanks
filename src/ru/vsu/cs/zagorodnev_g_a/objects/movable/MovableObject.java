@@ -31,8 +31,5 @@ import ru.vsu.cs.zagorodnev_g_a.objects.Destroyable;
             this.mp = mp;
         }
 
-        public boolean intersects(Position p) {
-            return this.position.x() == p.x() && this.position.y() == p.y();
-        }
     }
 

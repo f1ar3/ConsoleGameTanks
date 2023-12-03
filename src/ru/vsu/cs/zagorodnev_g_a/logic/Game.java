@@ -1,5 +1,6 @@
 package ru.vsu.cs.zagorodnev_g_a.logic;
 
+import ru.vsu.cs.zagorodnev_g_a.field.Colors;
 import ru.vsu.cs.zagorodnev_g_a.objects.immovable.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
@@ -14,6 +15,7 @@ import java.util.List;
 public class Game {
     private List<Player> players = new ArrayList<>();
     private List<BattleFieldObject> tanks = new ArrayList<>();
+    private List<BattleFieldObject> tiles = new ArrayList<>();
     private List<BattleFieldObject> walls = new ArrayList<>();
     private List<BattleFieldObject> indestructibleWalls = new ArrayList<>();
     private List<BattleFieldObject> water = new ArrayList<>();
@@ -58,7 +60,8 @@ public class Game {
     public void setTanks(List<BattleFieldObject> tanks) {
         this.tanks = tanks;
     }
-
+    public List<BattleFieldObject> getTiles() {return tiles;}
+    public void setTiles(List<BattleFieldObject> tiles) {this.tiles = tiles;}
     public List<BattleFieldObject> getWalls() {
         return walls;
     }
@@ -109,6 +112,8 @@ public class Game {
                             ((Eagle) object).setAlive(false);
                         } else {
                             objects.remove(object);
+                            System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Player " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+                                    + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed the object." + Colors.ANSI_RESET + "\n");
                         }
                     }
                     players.get(indexOfPlayer).getTank().getBullets().remove(i);
@@ -124,6 +129,10 @@ public class Game {
                 for (int j = 0; j < players.get(i).getTank().getBullets().size(); j++) {
                     for (Player value : players) {
                         if (!players.get(i).equals(value) && checkTankIntersectsBullet(players.get(i).getTank().getBullets(), j, value)){
+                            System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + players.get(i).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+                                    + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed tank " + Colors.ANSI_RESET + value.getTank().getColor() +Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET + "\n");
+                            value.setCondition(true);
+                            value.getTank().setPosition(new Position(value.getTank().getStartPosition().x(), value.getTank().getStartPosition().y()));
                             break;
                         }
                     }
@@ -179,7 +188,7 @@ public class Game {
     private boolean isCollision(Tank tank, List<BattleFieldObject> list, int changeX, int changeY) {
         for (BattleFieldObject object : list) {
             if (object.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))
-                    && (object instanceof Wall || object instanceof IndestructibleWall || object instanceof Water)) {
+                    && (object instanceof Wall || object instanceof IndestructibleWall)) {
                 object.setCollision(true);
                 return true;
             }
@@ -188,14 +197,15 @@ public class Game {
     }
 
     public void moveInViewOfCollision(int changeX, int changeY, int numberOfPlayer) {
-        for (int j = 0; j < players.size(); j++) {
+        for (int i = 0; i < players.size(); i++) {
             if (!isCollision(players.get(numberOfPlayer).getTank(), walls, changeX, changeY)
                     && !isCollision(players.get(numberOfPlayer).getTank(), indestructibleWalls, changeX, changeY)
-                    && !isCollision(players.get(numberOfPlayer).getTank(), water, changeX, changeY)
-                    && !tanksCollision(players.get(numberOfPlayer), players.get(j), changeX, changeY) && numberOfPlayer != j) {
+                    && !tanksCollision(players.get(numberOfPlayer), players.get(i), changeX, changeY) && numberOfPlayer != i) {
                 players.get(numberOfPlayer).getTank().move();
+                return;
             }
         }
+        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "You can't go further, there's an obstacle ahead." + Colors.ANSI_RESET + "\n");
     }
 
     private boolean tanksCollision(Player player1, Player player2, int changeX, int changeY) {
@@ -205,6 +215,30 @@ public class Game {
         return false;
     }
 
+    private boolean isInWater(Tank tank, List<BattleFieldObject> list) {
+        for (BattleFieldObject object : list) {
+            if (object instanceof Water && object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void backToStartPosition(int numberOfPlayer) {
+        if (isInWater(players.get(numberOfPlayer).getTank(), water)) {
+            players.get(numberOfPlayer).getTank().setPosition(new Position(players.get(numberOfPlayer).getTank().getStartPosition().x(), players.get(numberOfPlayer).getTank().getStartPosition().y()));
+            System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Oops, your tank hit in the water, you are returning to the starting point." + Colors.ANSI_RESET + "\n");
+        }
+    }
+
+    private boolean isInForest(Tank tank, List<BattleFieldObject> list) {
+        for (BattleFieldObject object : list) {
+            if (object instanceof Forest && object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void restart(){
         players.clear();
@@ -228,6 +262,7 @@ public class Game {
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
                 moveInViewOfCollision(-velocity, 0, indexOfPlayer);
+                backToStartPosition(indexOfPlayer);
             }
         }
     }
@@ -240,6 +275,7 @@ public class Game {
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
                 moveInViewOfCollision(velocity, 0, indexOfPlayer);
+                backToStartPosition(indexOfPlayer);
             }
         }
     }
@@ -252,6 +288,7 @@ public class Game {
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
                 moveInViewOfCollision(0, -velocity, indexOfPlayer);
+                backToStartPosition(indexOfPlayer);
             }
         }
     }
@@ -264,6 +301,7 @@ public class Game {
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
                 moveInViewOfCollision(0, velocity, indexOfPlayer);
+                backToStartPosition(indexOfPlayer);
             }
         }
     }

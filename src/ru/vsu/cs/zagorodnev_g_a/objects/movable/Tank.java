@@ -1,17 +1,21 @@
 package ru.vsu.cs.zagorodnev_g_a.objects.movable;
 
-import ru.vsu.cs.zagorodnev_g_a.objects.movable.Bullet;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tank extends MovableObject{
     private boolean isFire = false;
     private List<Bullet> bullets = new ArrayList<>();
+    private String color;
+
+    private final StartPosition startPosition = new StartPosition(getPosition().x(), getPosition().y());
 
     public Tank(Position position, MoveParameters mp) {
         super(position, mp);
+    }
+
+    public StartPosition getStartPosition() {
+        return startPosition;
     }
 
     public boolean isFire() {
@@ -28,6 +32,14 @@ public class Tank extends MovableObject{
 
     public void setBullets(List<Bullet> bullets) {
         this.bullets = bullets;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public void shoot() {
