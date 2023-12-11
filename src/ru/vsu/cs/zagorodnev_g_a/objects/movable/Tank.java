@@ -7,7 +7,8 @@ public class Tank extends MovableObject{
     private boolean isFire = false;
     private List<Bullet> bullets = new ArrayList<>();
     private String color;
-
+    private int points = 0;
+    private int pointsForKill = 1;
     private final StartPosition startPosition = new StartPosition(getPosition().x(), getPosition().y());
 
     public Tank(Position position, MoveParameters mp) {
@@ -40,6 +41,21 @@ public class Tank extends MovableObject{
 
     public void setColor(String color) {
         this.color = color;
+    }
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public int getPointsForKill() {
+        return pointsForKill;
+    }
+
+    public void setPointsForKill(int pointsForKill) {
+        this.pointsForKill = pointsForKill;
     }
 
     public void shoot() {

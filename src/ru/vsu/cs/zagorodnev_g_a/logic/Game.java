@@ -24,6 +24,7 @@ public class Game {
     private List<Turn> turns = new ArrayList<>();
     private final int velocity = 1;
     private boolean condition;
+    private boolean gameWasFinished = false;
 
     public List<Turn> getTurns() {
         return turns;
@@ -78,6 +79,14 @@ public class Game {
         this.indestructibleWalls = indestructibleWalls;
     }
 
+    public boolean isGameWasFinished() {
+        return gameWasFinished;
+    }
+
+    public void setGameWasFinished(boolean gameWasFinished) {
+        this.gameWasFinished = gameWasFinished;
+    }
+
     public List<BattleFieldObject> getWater() {
         return water;
     }
@@ -108,13 +117,8 @@ public class Game {
             for (BattleFieldObject object : objects) {
                 if (object.intersects(players.get(indexOfPlayer).getTank().getBullets().get(i).getPosition())) {
                     if (!(object instanceof IndestructibleWall)) {
-                        if (object instanceof Eagle) {
-                            ((Eagle) object).setAlive(false);
-                        } else {
                             objects.remove(object);
-                            System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Player " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
-                                    + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed the object." + Colors.ANSI_RESET + "\n");
-                        }
+                            messageAboutDestroyedObject(indexOfPlayer);
                     }
                     players.get(indexOfPlayer).getTank().getBullets().remove(i);
                     break;
@@ -129,8 +133,8 @@ public class Game {
                 for (int j = 0; j < players.get(i).getTank().getBullets().size(); j++) {
                     for (Player value : players) {
                         if (!players.get(i).equals(value) && checkTankIntersectsBullet(players.get(i).getTank().getBullets(), j, value)){
-                            System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + players.get(i).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
-                                    + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed tank " + Colors.ANSI_RESET + value.getTank().getColor() +Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET + "\n");
+                            messageAboutDestroyedTank(i, value);
+                            updatePointsForKill(i, value);
                             value.setCondition(true);
                             value.getTank().setPosition(new Position(value.getTank().getStartPosition().x(), value.getTank().getStartPosition().y()));
                             break;
@@ -200,12 +204,15 @@ public class Game {
         for (int i = 0; i < players.size(); i++) {
             if (!isCollision(players.get(numberOfPlayer).getTank(), walls, changeX, changeY)
                     && !isCollision(players.get(numberOfPlayer).getTank(), indestructibleWalls, changeX, changeY)
+                    && !isCollision(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY)
                     && !tanksCollision(players.get(numberOfPlayer), players.get(i), changeX, changeY) && numberOfPlayer != i) {
+                eagleCapture(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY);
                 players.get(numberOfPlayer).getTank().move();
+                //victory(players, eagles);
                 return;
             }
         }
-        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "You can't go further, there's an obstacle ahead." + Colors.ANSI_RESET + "\n");
+        messageAboutObstacle(numberOfPlayer);
     }
 
     private boolean tanksCollision(Player player1, Player player2, int changeX, int changeY) {
@@ -213,6 +220,17 @@ public class Game {
             return player2.getTank().intersects(new Position(player1.getTank().getPosition().x() + changeX, player1.getTank().getPosition().y() + changeY));
         }
         return false;
+    }
+
+    private void eagleCapture(Tank tank, List<BattleFieldObject> eagles, int changeX, int changeY) {
+        for (BattleFieldObject eagle : eagles) {
+            if (eagle.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY)) && eagle instanceof Eagle) {
+                ((Eagle) eagle).setAlive(false);
+                eagles.remove(eagle);
+                tank.setPoints(tank.getPoints() + ((Eagle) eagle).getPointsForEagle());
+                updatePointsForEagle(tank);
+            }
+        }
     }
 
     private boolean isInWater(Tank tank, List<BattleFieldObject> list) {
@@ -227,7 +245,7 @@ public class Game {
     public void backToStartPosition(int numberOfPlayer) {
         if (isInWater(players.get(numberOfPlayer).getTank(), water)) {
             players.get(numberOfPlayer).getTank().setPosition(new Position(players.get(numberOfPlayer).getTank().getStartPosition().x(), players.get(numberOfPlayer).getTank().getStartPosition().y()));
-            System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Oops, your tank hit in the water, you are returning to the starting point." + Colors.ANSI_RESET + "\n");
+            messageAboutWater(numberOfPlayer);
         }
     }
 
@@ -248,6 +266,28 @@ public class Game {
         water.clear();
         forest.clear();
         eagles.clear();
+    }
+
+    private void maxNumberOfPoints(List<Player> players) {
+        int maxNumberOfPoints = 0;
+        int indexOfPlayer = 0;
+        for (int i = 0; i < players.size(); i++) {
+            System.out.println("Points of tank " + players.get(i).getTank().getColor() + " ^ " + players.get(i).getTank().getPoints());
+            if (maxNumberOfPoints < players.get(i).getTank().getPoints()) {
+                maxNumberOfPoints = players.get(i).getTank().getPoints();
+                i = indexOfPlayer;
+            }
+        }
+        System.out.println("The winner is" + players.get(indexOfPlayer).getTank().getColor() + " ^ " + players.get(indexOfPlayer).getTank().getPoints());
+    }
+
+    public void victory(List<Player> players, List<BattleFieldObject> eagles) {
+        for (BattleFieldObject eagle : eagles) {
+            if (!((Eagle) eagle).isAlive()) {
+                gameWasFinished = true;
+                maxNumberOfPoints(players);
+            }
+        }
     }
 
     public void timerBulletRunning(int indexOfPlayer, int indexOfCurrBullet){
@@ -310,4 +350,34 @@ public class Game {
         players.get(indexOfPlayer).getTank().shoot();
     }
 
+    private void updatePointsForKill (int indexOfPlayer, Player player) {
+        players.get(indexOfPlayer).getTank().setPoints(player.getTank().getPointsForKill() + players.get(indexOfPlayer).getTank().getPoints());
+        System.out.println(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Points of tank " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+                + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " : " + players.get(indexOfPlayer).getTank().getPoints() + Colors.ANSI_RESET + "\n");
+    }
+
+    private void updatePointsForEagle(Tank tank) {
+        System.out.println(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Points of tank " + Colors.ANSI_RESET + tank.getColor() + Colors.ANSI_BLACK + " ^ "
+                + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " : " + tank.getPoints() + Colors.ANSI_RESET + "\n");
+    }
+
+    private void messageAboutDestroyedObject(int indexOfPlayer) {
+        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+                + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed the object." + Colors.ANSI_RESET + "\n");
+    }
+
+    private void messageAboutDestroyedTank(int indexOfPlayer, Player player) {
+        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+                + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed tank " + Colors.ANSI_RESET + player.getTank().getColor() +Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET + "\n");
+    }
+
+    private void messageAboutObstacle (int indexOfPlayer) {
+        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+                + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " can't go further, there's an obstacle ahead." + Colors.ANSI_RESET + "\n");
+    }
+
+    private void messageAboutWater(int indexOfPlayer) {
+        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Oops, tank " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ " +
+                Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " hit in the water, it returns to the starting point." + Colors.ANSI_RESET + "\n");
+    }
 }

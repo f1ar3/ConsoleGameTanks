@@ -22,12 +22,18 @@ public class Colors {
     public static final String CYAN_BACKGROUND = "\033[46m";
     public static final String WHITE_BACKGROUND = "\033[47m";
 
-    public static final String BLACK_BACKGROUND_BRIGHT = "\033[0;100m";// BLACK
-    public static final String RED_BACKGROUND_BRIGHT = "\033[0;101m";// RED
-    public static final String GREEN_BACKGROUND_BRIGHT = "\033[0;102m";// GREEN
-    public static final String YELLOW_BACKGROUND_BRIGHT = "\033[0;103m";// YELLOW
-    public static final String BLUE_BACKGROUND_BRIGHT = "\033[0;104m";// BLUE
-    public static final String PURPLE_BACKGROUND_BRIGHT = "\033[0;105m"; // PURPLE
-    public static final String CYAN_BACKGROUND_BRIGHT = "\033[0;106m";  // CYAN
+    public static final String BLACK_BACKGROUND_BRIGHT = "\033[0;100m";
+    public static final String RED_BACKGROUND_BRIGHT = "\033[0;101m";
+    public static final String GREEN_BACKGROUND_BRIGHT = "\033[0;102m";
+    public static final String YELLOW_BACKGROUND_BRIGHT = "\033[0;103m";
+    public static final String BLUE_BACKGROUND_BRIGHT = "\033[0;104m";
+    public static final String PURPLE_BACKGROUND_BRIGHT = "\033[0;105m";
+    public static final String CYAN_BACKGROUND_BRIGHT = "\033[0;106m";
     public static final String WHITE_BACKGROUND_BRIGHT = "\033[0;107m";
+
+    protected static String colorizeTank(int numberOfPlayer) {
+        String[] colors = {YELLOW_BACKGROUND_BRIGHT, PURPLE_BACKGROUND_BRIGHT, GREEN_BACKGROUND_BRIGHT, CYAN_BACKGROUND_BRIGHT};
+        return colors[numberOfPlayer];
+    }
 }
+

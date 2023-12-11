@@ -5,17 +5,7 @@ import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
 public class Eagle extends BattleFieldObject {
     private boolean isAlive = true;
-    private boolean isCollision = false;
-
-    @Override
-    public boolean isCollision() {
-        return isCollision;
-    }
-
-    @Override
-    public void setCollision(boolean collision) {
-        isCollision = collision;
-    }
+    private int pointsForEagle = 3;
 
     public Eagle(Position position) {
         super(position);
@@ -29,4 +19,11 @@ public class Eagle extends BattleFieldObject {
         isAlive = alive;
     }
 
+    public int getPointsForEagle() {
+        return pointsForEagle;
+    }
+
+    public void setPointsForEagle(int pointsForEagle) {
+        this.pointsForEagle = pointsForEagle;
+    }
 }

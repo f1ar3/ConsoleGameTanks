@@ -1,5 +1,6 @@
 package ru.vsu.cs.zagorodnev_g_a.field;
 
+import ru.vsu.cs.zagorodnev_g_a.logic.TankGameException;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
 import ru.vsu.cs.zagorodnev_g_a.logic.Game;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
@@ -14,17 +15,15 @@ public class ConsoleField {
     Game game;
     protected final Scanner sc = new Scanner(System.in);
 
-    int n;
-    int k;
+    int height;
+    int width;
+    int numberOfPlayers;
 
     public ConsoleField(Game game) {
         this.game = game;
-        System.out.print(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Enter the number of dimensions of the playing field (rows):" + Colors.ANSI_RESET + " ");
-        n = sc.nextInt();
-        System.out.print(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Enter the number of dimensions of the playing field (columns):" + Colors.ANSI_RESET + " ");
-        k = sc.nextInt();
-        System.out.println();
-        BattleMapConsole.initializeGame(game,n, k);
+        gameParameters();
+        BattleMapConsole.initializeGame(game, height, width, numberOfPlayers);
+        if (game.isGameWasFinished()) {return;}
         updateField();
         action();
     }
@@ -109,7 +108,11 @@ public class ConsoleField {
         }
 
         for (BattleFieldObject forest : game.getForest()) {
-            BattleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = Colors.GREEN_BACKGROUND + " F " + Colors.ANSI_RESET;
+            BattleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = Colors.BLACK_BACKGROUND + Colors.ANSI_GREEN + " F " + Colors.ANSI_RESET;
+        }
+
+        for (BattleFieldObject eagle : game.getEagles()) {
+            BattleMapConsole.field[eagle.getPosition().y()][eagle.getPosition().x()] = Colors.WHITE_BACKGROUND_BRIGHT  + Colors.ANSI_BLACK + " E " + Colors.ANSI_RESET;
         }
 
         for (Player player : game.getPlayers()) {
@@ -138,6 +141,38 @@ public class ConsoleField {
         }
         for (int i = 0; i < BattleMapConsole.field[0].length; i++) {
             System.out.print("- ");
+        }
+        System.out.println();
+    }
+
+    private void gameParameters() {
+        while (true) {
+            try {
+                if (height < 10) {
+                    System.out.print(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Enter the number of dimensions of the playing field (height):" + Colors.ANSI_RESET + " ");
+                    height = Integer.parseInt(sc.nextLine());
+                    if (height < 10) {
+                        throw new TankGameException("Field height must be greater than 10.");
+                    }
+                }
+                if (width < 10) {
+                    System.out.print(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Enter the number of dimensions of the playing field (width):" + Colors.ANSI_RESET + " ");
+                    width = Integer.parseInt(sc.nextLine());
+                    if (width < 10) {
+                        throw new TankGameException("Field width must be greater than 10.");
+                    }
+                }
+                System.out.print(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Enter the number player's:" + Colors.ANSI_RESET + " ");
+                numberOfPlayers = sc.nextInt();
+                    if (numberOfPlayers > 4) {
+                        throw new TankGameException("The number of players must be from 1 to 4.");
+                    }
+                    break;
+            } catch (NumberFormatException e) {
+                System.out.println(Colors.ANSI_RED + "Error: Incorrect type of input value." + Colors.ANSI_RESET);
+            } catch (TankGameException e) {
+                System.out.println(e.getMessage());
+            }
         }
         System.out.println();
     }
