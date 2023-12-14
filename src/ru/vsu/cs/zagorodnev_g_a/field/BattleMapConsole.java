@@ -114,7 +114,7 @@ public class BattleMapConsole {
 
     private static void setEagle(Game game, int height, int width, int i, int j) {
         Eagle eagle;
-        if (i == height / 4 && j == width / 2) {
+        if (i == height - height / 4 && j == width / 4) {
            eagle = new Eagle(new Position(j,i));
            game.getEagles().add(eagle);
         }

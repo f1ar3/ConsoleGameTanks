@@ -2,14 +2,19 @@ package ru.vsu.cs.zagorodnev_g_a.objects;
 
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
-public class BattleFieldObject {
+public class BattleFieldObject implements Positionable {
     protected Position position;
-    protected boolean collision = true;
+    protected final boolean collision;
 
     public BattleFieldObject(Position position) {
+        this(position, false);
+    }
+    public BattleFieldObject(Position position, boolean collision) {
         this.position = position;
+        this.collision = collision;
     }
 
+    @Override
     public Position getPosition() {
         return position;
     }
@@ -20,10 +25,6 @@ public class BattleFieldObject {
 
     public boolean isCollision() {
         return collision;
-    }
-
-    public void setCollision(boolean collision) {
-        this.collision = collision;
     }
 
     public boolean intersects(Position p) {

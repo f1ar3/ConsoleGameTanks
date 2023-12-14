@@ -5,7 +5,7 @@ import ru.vsu.cs.zagorodnev_g_a.objects.ObjectFactory;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
 public class Water extends BattleFieldObject {
-    public static class Factory implements ObjectFactory {
+    private static class Factory implements ObjectFactory {
         @Override
         public BattleFieldObject createObject(Position position) {
             return new Water(position);

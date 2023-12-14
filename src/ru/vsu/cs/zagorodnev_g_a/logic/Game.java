@@ -192,11 +192,11 @@ public class Game {
     private boolean isCollision(Tank tank, List<BattleFieldObject> list, int changeX, int changeY) {
         for (BattleFieldObject object : list) {
             if (object.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))
-                    && (object instanceof Wall || object instanceof IndestructibleWall)) {
-                object.setCollision(true);
+                    && object.isCollision()) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -204,11 +204,11 @@ public class Game {
         for (int i = 0; i < players.size(); i++) {
             if (!isCollision(players.get(numberOfPlayer).getTank(), walls, changeX, changeY)
                     && !isCollision(players.get(numberOfPlayer).getTank(), indestructibleWalls, changeX, changeY)
-                    && !isCollision(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY)
+                    && !isCollision(players.get(numberOfPlayer).getTank(), water, changeX, changeY)
                     && !tanksCollision(players.get(numberOfPlayer), players.get(i), changeX, changeY) && numberOfPlayer != i) {
                 eagleCapture(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY);
+//                victory(players, eagles);
                 players.get(numberOfPlayer).getTank().move();
-                //victory(players, eagles);
                 return;
             }
         }
@@ -226,7 +226,6 @@ public class Game {
         for (BattleFieldObject eagle : eagles) {
             if (eagle.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY)) && eagle instanceof Eagle) {
                 ((Eagle) eagle).setAlive(false);
-                eagles.remove(eagle);
                 tank.setPoints(tank.getPoints() + ((Eagle) eagle).getPointsForEagle());
                 updatePointsForEagle(tank);
             }
@@ -272,20 +271,21 @@ public class Game {
         int maxNumberOfPoints = 0;
         int indexOfPlayer = 0;
         for (int i = 0; i < players.size(); i++) {
-            System.out.println("Points of tank " + players.get(i).getTank().getColor() + " ^ " + players.get(i).getTank().getPoints());
+            System.out.println("Points of tank " + players.get(i).getTank().getColor() + " ^ " + players.get(i).getTank().getPoints() + Colors.ANSI_RESET);
             if (maxNumberOfPoints < players.get(i).getTank().getPoints()) {
                 maxNumberOfPoints = players.get(i).getTank().getPoints();
                 i = indexOfPlayer;
             }
         }
-        System.out.println("The winner is" + players.get(indexOfPlayer).getTank().getColor() + " ^ " + players.get(indexOfPlayer).getTank().getPoints());
+        System.out.println("The winner is" + players.get(indexOfPlayer).getTank().getColor() + " ^ " + players.get(indexOfPlayer).getTank().getPoints() + Colors.ANSI_RESET);
     }
 
     public void victory(List<Player> players, List<BattleFieldObject> eagles) {
-        for (BattleFieldObject eagle : eagles) {
-            if (!((Eagle) eagle).isAlive()) {
+        for (int i = 0; i < eagles.size(); i++) {
+            if (!((Eagle) eagles.get(i)).isAlive()) {
                 gameWasFinished = true;
                 maxNumberOfPoints(players);
+                eagles.remove(i);
             }
         }
     }
@@ -294,59 +294,21 @@ public class Game {
         players.get(indexOfPlayer).getTank().getBullets().get(indexOfCurrBullet).move();
     }
 
-    public void leftButton(int indexOfPlayer){
-        turns.get(indexOfPlayer).setTurned(turns.get(indexOfPlayer).getDirection() == MoveDirections.LEFT);
+    public void uniButton(int indexOfPlayer, MoveDirections direction){
+        turns.get(indexOfPlayer).setTurned(turns.get(indexOfPlayer).getDirection() == direction);
         if (!turns.get(indexOfPlayer).isTurned()) {
-            players.get(indexOfPlayer).getTank().turn(MoveDirections.LEFT);
-            turns.get(indexOfPlayer).setDirection(MoveDirections.LEFT);
+            players.get(indexOfPlayer).getTank().turn(direction);
+            turns.get(indexOfPlayer).setDirection(direction);
         } else {
             if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfCollision(-velocity, 0, indexOfPlayer);
-                backToStartPosition(indexOfPlayer);
-            }
-        }
-    }
-
-    public void rightButton(int indexOfPlayer){
-        turns.get(indexOfPlayer).setTurned(turns.get(indexOfPlayer).getDirection() == MoveDirections.RIGHT);
-        if (!turns.get(indexOfPlayer).isTurned()) {
-            players.get(indexOfPlayer).getTank().turn(MoveDirections.RIGHT);
-            turns.get(indexOfPlayer).setDirection(MoveDirections.RIGHT);
-        } else {
-            if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfCollision(velocity, 0, indexOfPlayer);
-                backToStartPosition(indexOfPlayer);
-            }
-        }
-    }
-
-    public void upButton(int indexOfPlayer){
-        turns.get(indexOfPlayer).setTurned(turns.get(indexOfPlayer).getDirection() == MoveDirections.UP);
-        if (!turns.get(indexOfPlayer).isTurned()) {
-            players.get(indexOfPlayer).getTank().turn(MoveDirections.UP);
-            turns.get(indexOfPlayer).setDirection(MoveDirections.UP);
-        } else {
-            if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfCollision(0, -velocity, indexOfPlayer);
-                backToStartPosition(indexOfPlayer);
-            }
-        }
-    }
-
-    public void downButton(int indexOfPlayer){
-        turns.get(indexOfPlayer).setTurned(turns.get(indexOfPlayer).getDirection() == MoveDirections.DOWN);
-        if (!turns.get(indexOfPlayer).isTurned()) {
-            players.get(indexOfPlayer).getTank().turn(MoveDirections.DOWN);
-            turns.get(indexOfPlayer).setDirection(MoveDirections.DOWN);
-        } else {
-            if (players.get(indexOfPlayer).isCondition()) {
-                moveInViewOfCollision(0, velocity, indexOfPlayer);
+                moveInViewOfCollision(velocity * direction.dx, velocity * direction.dy, indexOfPlayer);
                 backToStartPosition(indexOfPlayer);
             }
         }
     }
 
     public void fireButton(int indexOfPlayer){
+        players.get(indexOfPlayer).getTank().setFire(true);
         players.get(indexOfPlayer).getTank().shoot();
     }
 
@@ -357,6 +319,8 @@ public class Game {
     }
 
     private void updatePointsForEagle(Tank tank) {
+        System.out.println(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + tank.getColor() + Colors.ANSI_BLACK + " ^ "
+                + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " captured eagle" + Colors.ANSI_RESET + "\n");
         System.out.println(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Points of tank " + Colors.ANSI_RESET + tank.getColor() + Colors.ANSI_BLACK + " ^ "
                 + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " : " + tank.getPoints() + Colors.ANSI_RESET + "\n");
     }

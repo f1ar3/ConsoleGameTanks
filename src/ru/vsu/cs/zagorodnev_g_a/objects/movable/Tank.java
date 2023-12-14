@@ -9,13 +9,13 @@ public class Tank extends MovableObject{
     private String color;
     private int points = 0;
     private int pointsForKill = 1;
-    private final StartPosition startPosition = new StartPosition(getPosition().x(), getPosition().y());
+    private final Position startPosition = new Position(getPosition().x(), getPosition().y());
 
     public Tank(Position position, MoveParameters mp) {
         super(position, mp);
     }
 
-    public StartPosition getStartPosition() {
+    public Position getStartPosition() {
         return startPosition;
     }
 

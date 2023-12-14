@@ -7,7 +7,8 @@ import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.MoveDirections;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Tank;
 
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ConsoleField {
@@ -23,34 +24,79 @@ public class ConsoleField {
         this.game = game;
         gameParameters();
         BattleMapConsole.initializeGame(game, height, width, numberOfPlayers);
-        if (game.isGameWasFinished()) {return;}
         updateField();
         action();
+
+    }
+
+    interface Quitable {
+        default boolean isContinueGame() {
+            return true;
+        }
+    }
+
+    interface PlayerAction extends Quitable {
+        void applyActionTo(Game g, int numPlayer);
+
+
+        public static class DummyImpl implements PlayerAction {
+            @Override
+            public void applyActionTo(Game g, int numPlayer) {
+            }
+        };
+        public static final PlayerAction NO_ACTION = new DummyImpl();
+    }
+
+    private static class MovePlayerAction implements PlayerAction {
+
+        private final MoveDirections md;
+
+        public MovePlayerAction(MoveDirections md) {
+            this.md = md;
+        }
+
+
+        @Override
+        public void applyActionTo(Game g, int numPlayer) {
+            g.uniButton(numPlayer, md);
+        }
+    }
+
+    private static class FirePlayerAction implements PlayerAction {
+
+
+        @Override
+        public void applyActionTo(Game g, int numPlayer) {
+            g.fireButton(numPlayer);
+        }
+    }
+
+    private final Map<String, PlayerAction> dirs = new HashMap<>();
+    {
+        dirs.put("w", new MovePlayerAction(MoveDirections.UP));
+        dirs.put("s", new MovePlayerAction(MoveDirections.DOWN));
+        dirs.put("a", new MovePlayerAction(MoveDirections.LEFT));
+        dirs.put("d", new MovePlayerAction(MoveDirections.RIGHT));
+        dirs.put("f", new FirePlayerAction());
+        dirs.put("q", new PlayerAction.DummyImpl(){
+            @Override
+            public boolean isContinueGame() {
+                return false;
+            }
+        });
+    }
+    private PlayerAction getActionByName(String name) {
+        return dirs.getOrDefault(name, PlayerAction.NO_ACTION);
     }
 
     private boolean inputKey(int numberOfPlayer) {
         System.out.println("player's" + " " + (numberOfPlayer + 1) + " action");
         String str;
         str = sc.next();
-        if (Objects.equals(str, "w")) {
-            game.upButton(numberOfPlayer);
-            return true;
-        } else if (Objects.equals(str, "s")) {
-            game.downButton(numberOfPlayer);
-            return true;
-        } else if (Objects.equals(str, "a")) {
-            game.leftButton(numberOfPlayer);
-            return true;
-        } else if (Objects.equals(str, "d")) {
-            game.rightButton(numberOfPlayer);
-            return true;
-        }
-        if (Objects.equals(str, "f")) {
-            game.getPlayers().get(numberOfPlayer).getTank().setFire(true);
-            game.fireButton(numberOfPlayer);
-            return true;
-        }
-        return !Objects.equals(str, "q");
+
+        PlayerAction pa = getActionByName(str);
+        pa.applyActionTo(game, numberOfPlayer);
+        return pa.isContinueGame();
     }
 
     private void action(){
@@ -175,5 +221,9 @@ public class ConsoleField {
             }
         }
         System.out.println();
+    }
+
+    private void messageAboutEnd() {
+        System.out.println("End of the game");
     }
 }
