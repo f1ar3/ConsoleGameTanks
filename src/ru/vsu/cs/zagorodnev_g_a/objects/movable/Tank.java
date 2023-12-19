@@ -1,5 +1,7 @@
 package ru.vsu.cs.zagorodnev_g_a.objects.movable;
 
+import ru.vsu.cs.zagorodnev_g_a.field.Colors;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,18 +63,32 @@ public class Tank extends MovableObject{
     public void shoot() {
         isFire = true;
         if (this.getMp().getDirection() == MoveDirections.LEFT) {
-            this.getBullets().add(new Bullet(new Position(this.getPosition().x() - this.getMp().getVelocity(), this.getPosition().y()), new MoveParameters(this.getMp().getVelocity())));
+            this.getBullets().add(new Bullet(new Position(getMp().leftOfX(this), getY()), new MoveParameters(this.getMp().getVelocity())));
         } else if (this.getMp().getDirection() == MoveDirections.RIGHT) {
-            this.getBullets().add(new Bullet(new Position(this.getPosition().x() + this.getMp().getVelocity(), this.getPosition().y()), new MoveParameters(this.getMp().getVelocity())));
+            this.getBullets().add(new Bullet(new Position(getMp().rightOfX(this), getY()), new MoveParameters(this.getMp().getVelocity())));
         } else if (this.getMp().getDirection() == MoveDirections.UP) {
-            this.getBullets().add(new Bullet(new Position(this.getPosition().x(), this.getPosition().y() - this.getMp().getVelocity()), new MoveParameters(this.getMp().getVelocity())));
+            this.getBullets().add(new Bullet(new Position(getX(), getMp().aboveOfX(this)), new MoveParameters(this.getMp().getVelocity())));
         } else if (this.getMp().getDirection() == MoveDirections.DOWN) {
-            this.getBullets().add(new Bullet(new Position(this.getPosition().x(), this.getPosition().y() + this.getMp().getVelocity()), new MoveParameters(this.getMp().getVelocity())));
+            this.getBullets().add(new Bullet(new Position(getX(), getMp().belowOfX(this)), new MoveParameters(this.getMp().getVelocity())));
         }
-        this.getBullets().get(this.getBullets().size() - 1).getMp().setDirection(this.getMp().getDirection());
+        this.getBullets().getLast().getMp().setDirection(this.getMp().getDirection());
     }
 
     public void turn(MoveDirections direction) {
         this.getMp().setDirection(direction);
+    }
+
+    @Override
+    public String toString() {
+        if (this.getMp().getDirection() == MoveDirections.LEFT) {
+            return this.getColor() + Colors.ANSI_BLACK + " < " + Colors.ANSI_RESET;
+        } else if (this.getMp().getDirection() == MoveDirections.RIGHT) {
+            return this.getColor() + Colors.ANSI_BLACK + " > " + Colors.ANSI_RESET;
+        } else if (this.getMp().getDirection() == MoveDirections.UP) {
+            return this.getColor() + Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET;
+        } else if (this.getMp().getDirection() == MoveDirections.DOWN) {
+        return this.getColor() + Colors.ANSI_BLACK + " v " + Colors.ANSI_RESET;
+        }
+        return null;
     }
 }

@@ -20,4 +20,20 @@ public class MoveParameters {
         return velocity;
     }
 
+    public int aboveOfX(MovableObject movableObject) {
+        return movableObject.getY() - this.velocity;
+    }
+
+    public int belowOfX(MovableObject movableObject) {
+        return movableObject.getY() + this.velocity;
+    }
+
+    public int leftOfX(MovableObject movableObject) {
+        return movableObject.getX() - this.velocity;
+    }
+
+    public int rightOfX(MovableObject movableObject) {
+        return movableObject.getX() + this.velocity;
+    }
+
 }

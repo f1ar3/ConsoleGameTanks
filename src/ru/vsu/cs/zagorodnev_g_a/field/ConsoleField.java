@@ -138,39 +138,39 @@ public class ConsoleField {
     private void updateField() {
 
         for (BattleFieldObject tile : game.getTiles()) {
-            BattleMapConsole.field[tile.getPosition().y()][tile.getPosition().x()] = Colors.BLACK_BACKGROUND + " x " + Colors.ANSI_RESET;
+            BattleMapConsole.field[tile.getPosition().y()][tile.getPosition().x()] = tile.toString();
         }
 
         for (BattleFieldObject indestructibleWall : game.getIndestructibleWalls()) {
-            BattleMapConsole.field[indestructibleWall.getPosition().y()][indestructibleWall.getPosition().x()] = Colors.WHITE_BACKGROUND + " D " + Colors.ANSI_RESET;
+            BattleMapConsole.field[indestructibleWall.getPosition().y()][indestructibleWall.getPosition().x()] = indestructibleWall.toString();
         }
 
-        for (BattleFieldObject currentWall : game.getWalls()) {
-            BattleMapConsole.field[currentWall.getPosition().y()][currentWall.getPosition().x()] = Colors.RED_BACKGROUND + " W " + Colors.ANSI_RESET;
+        for (BattleFieldObject wall : game.getWalls()) {
+            BattleMapConsole.field[wall.getPosition().y()][wall.getPosition().x()] = wall.toString();
         }
 
         for (BattleFieldObject water : game.getWater()) {
-            BattleMapConsole.field[water.getPosition().y()][water.getPosition().x()] = Colors.BLUE_BACKGROUND + " ~ " + Colors.ANSI_RESET;
+            BattleMapConsole.field[water.getPosition().y()][water.getPosition().x()] = water.toString();
         }
 
         for (BattleFieldObject forest : game.getForest()) {
-            BattleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = Colors.BLACK_BACKGROUND + Colors.ANSI_GREEN + " F " + Colors.ANSI_RESET;
+            BattleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = forest.toString();
         }
 
         for (BattleFieldObject eagle : game.getEagles()) {
-            BattleMapConsole.field[eagle.getPosition().y()][eagle.getPosition().x()] = Colors.WHITE_BACKGROUND_BRIGHT  + Colors.ANSI_BLACK + " E " + Colors.ANSI_RESET;
+            BattleMapConsole.field[eagle.getPosition().y()][eagle.getPosition().x()] = eagle.toString();
         }
 
         for (Player player : game.getPlayers()) {
             if (player.isCondition()) {
                 if (player.getTank().getMp().getDirection() == MoveDirections.LEFT) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().getColor() + Colors.ANSI_BLACK + " < " + Colors.ANSI_RESET;
+                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.RIGHT) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().getColor() + Colors.ANSI_BLACK + " > " + Colors.ANSI_RESET;
+                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.UP) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().getColor() + Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET;
+                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.DOWN) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().getColor() + Colors.ANSI_BLACK + " v " + Colors.ANSI_RESET;
+                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 }
             }
         }
