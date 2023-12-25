@@ -9,14 +9,14 @@ public class IndestructibleWall extends BattleFieldObject {
 
     private static class Factory implements ObjectFactory {
         @Override
-        public BattleFieldObject createObject(Position position) {
+        public IndestructibleWall createObject(Position position) {
             return new IndestructibleWall(position);
         }
     }
     public static final IndestructibleWall.Factory FACTORY_INSTANCE = new IndestructibleWall.Factory();
 
     public IndestructibleWall(Position position) {
-        super(position, true);
+        super(position, true, false);
     }
 
     @Override

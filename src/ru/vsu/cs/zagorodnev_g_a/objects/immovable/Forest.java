@@ -9,7 +9,7 @@ public class Forest extends BattleFieldObject {
 
     private static class Factory implements ObjectFactory {
         @Override
-        public BattleFieldObject createObject(Position position) {
+        public Forest createObject(Position position) {
             return new Forest(position);
         }
     }

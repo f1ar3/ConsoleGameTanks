@@ -6,17 +6,24 @@ public class BattleFieldObject implements Positionable {
     protected Position position;
     protected final boolean collision;
 
+    protected boolean destroyable;
+
     public BattleFieldObject(Position position) {
-        this(position, false);
+        this(position, false, false);
     }
-    public BattleFieldObject(Position position, boolean collision) {
+    public BattleFieldObject(Position position, boolean collision, boolean destroyable) {
         this.position = position;
         this.collision = collision;
+        this.destroyable = destroyable;
     }
 
     @Override
     public Position getPosition() {
         return position;
+    }
+
+    public boolean isDestroyable() {
+        return destroyable;
     }
 
     public void setPosition(Position position) {

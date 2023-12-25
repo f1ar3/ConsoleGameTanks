@@ -1,6 +1,8 @@
 package ru.vsu.cs.zagorodnev_g_a.logic;
 
+import ru.vsu.cs.zagorodnev_g_a.Main;
 import ru.vsu.cs.zagorodnev_g_a.field.Colors;
+import ru.vsu.cs.zagorodnev_g_a.field.ConsoleField;
 import ru.vsu.cs.zagorodnev_g_a.objects.immovable.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
@@ -13,6 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
+    private final int height;
+    private final int width;
+    public Game(int height, int width) {
+        this.height = height;
+        this.width = width;
+    }
     private List<Player> players = new ArrayList<>();
     private List<BattleFieldObject> tanks = new ArrayList<>();
     private List<BattleFieldObject> tiles = new ArrayList<>();
@@ -91,7 +99,7 @@ public class Game {
         return water;
     }
 
-    public void setLakes(List<BattleFieldObject> water) {
+    public void setWater(List<BattleFieldObject> water) {
         this.water = water;
     }
 
@@ -116,9 +124,9 @@ public class Game {
         for (int i = 0; i < players.get(indexOfPlayer).getTank().getBullets().size(); i++) {
             for (BattleFieldObject object : objects) {
                 if (object.intersects(players.get(indexOfPlayer).getTank().getBullets().get(i).getPosition())) {
-                    if (!(object instanceof IndestructibleWall)) {
-                            objects.remove(object);
-                            messageAboutDestroyedObject(indexOfPlayer);
+                    if (object.isDestroyable()) {
+                        objects.remove(object);
+                        messageAboutDestroyedObject(indexOfPlayer);
                     }
                     players.get(indexOfPlayer).getTank().getBullets().remove(i);
                     break;
@@ -143,7 +151,6 @@ public class Game {
                 }
                 destroySeparatedObjects(walls, i);
                 destroySeparatedObjects(indestructibleWalls, i);
-                destroySeparatedObjects(eagles, i);
             }
         }
 
@@ -196,7 +203,6 @@ public class Game {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -207,7 +213,7 @@ public class Game {
                     && !isCollision(players.get(numberOfPlayer).getTank(), water, changeX, changeY)
                     && !tanksCollision(players.get(numberOfPlayer), players.get(i), changeX, changeY) && numberOfPlayer != i) {
                 eagleCapture(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY);
-//                victory(players, eagles);
+                victory(players, eagles);
                 players.get(numberOfPlayer).getTank().move();
                 return;
             }
@@ -224,17 +230,35 @@ public class Game {
 
     private void eagleCapture(Tank tank, List<BattleFieldObject> eagles, int changeX, int changeY) {
         for (BattleFieldObject eagle : eagles) {
-            if (eagle.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY)) && eagle instanceof Eagle) {
-                ((Eagle) eagle).setAlive(false);
+            if (eagle.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))) {
+                int numberOfRespawn = ((Eagle) eagle).getNumberOfRespawn();
                 tank.setPoints(tank.getPoints() + ((Eagle) eagle).getPointsForEagle());
                 updatePointsForEagle(tank);
+                switch (numberOfRespawn) {
+                    case (0):
+                        eagle.setPosition(new Position(width / 4, height / 4));
+                        ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
+                        break;
+                    case (1):
+                        eagle.setPosition(new Position(width - width / 4, height / 4));
+                        ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
+                        break;
+                    case (2):
+                        eagle.setPosition(new Position(width - width / 4, height - height / 4));
+                        ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
+                        break;
+                    case (3):
+                        eagle.setPosition(new Position(width / 4, height - height / 4));
+                        ((Eagle) eagle).setNumberOfRespawn(0);
+                        break;
+                }
             }
         }
     }
 
     private boolean isInWater(Tank tank, List<BattleFieldObject> list) {
         for (BattleFieldObject object : list) {
-            if (object instanceof Water && object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
+            if (object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
                 return true;
             }
         }
@@ -250,7 +274,7 @@ public class Game {
 
     private boolean isInForest(Tank tank, List<BattleFieldObject> list) {
         for (BattleFieldObject object : list) {
-            if (object instanceof Forest && object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
+            if (object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
                 return true;
             }
         }
@@ -281,13 +305,7 @@ public class Game {
     }
 
     public void victory(List<Player> players, List<BattleFieldObject> eagles) {
-        for (int i = 0; i < eagles.size(); i++) {
-            if (!((Eagle) eagles.get(i)).isAlive()) {
-                gameWasFinished = true;
-                maxNumberOfPoints(players);
-                eagles.remove(i);
-            }
-        }
+
     }
 
     public void timerBulletRunning(int indexOfPlayer, int indexOfCurrBullet){

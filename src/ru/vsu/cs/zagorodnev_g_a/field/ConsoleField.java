@@ -16,17 +16,17 @@ public class ConsoleField {
     Game game;
     protected final Scanner sc = new Scanner(System.in);
 
-    int height;
-    int width;
-    int numberOfPlayers;
+    private int height;
+    private int width;
+    private int numberOfPlayers;
+    BattleMapConsole battleMapConsole;
 
-    public ConsoleField(Game game) {
-        this.game = game;
+    public ConsoleField() {
         gameParameters();
-        BattleMapConsole.initializeGame(game, height, width, numberOfPlayers);
+        game = new Game(height,width);
+        battleMapConsole = new BattleMapConsole(this.game, this.height, this.width, this.numberOfPlayers);
         updateField();
         action();
-
     }
 
     interface Quitable {
@@ -138,39 +138,39 @@ public class ConsoleField {
     private void updateField() {
 
         for (BattleFieldObject tile : game.getTiles()) {
-            BattleMapConsole.field[tile.getPosition().y()][tile.getPosition().x()] = tile.toString();
+            battleMapConsole.field[tile.getPosition().y()][tile.getPosition().x()] = tile.toString();
         }
 
         for (BattleFieldObject indestructibleWall : game.getIndestructibleWalls()) {
-            BattleMapConsole.field[indestructibleWall.getPosition().y()][indestructibleWall.getPosition().x()] = indestructibleWall.toString();
+            battleMapConsole.field[indestructibleWall.getPosition().y()][indestructibleWall.getPosition().x()] = indestructibleWall.toString();
         }
 
         for (BattleFieldObject wall : game.getWalls()) {
-            BattleMapConsole.field[wall.getPosition().y()][wall.getPosition().x()] = wall.toString();
+            battleMapConsole.field[wall.getPosition().y()][wall.getPosition().x()] = wall.toString();
         }
 
         for (BattleFieldObject water : game.getWater()) {
-            BattleMapConsole.field[water.getPosition().y()][water.getPosition().x()] = water.toString();
+            battleMapConsole.field[water.getPosition().y()][water.getPosition().x()] = water.toString();
         }
 
         for (BattleFieldObject forest : game.getForest()) {
-            BattleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = forest.toString();
+            battleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = forest.toString();
         }
 
         for (BattleFieldObject eagle : game.getEagles()) {
-            BattleMapConsole.field[eagle.getPosition().y()][eagle.getPosition().x()] = eagle.toString();
+            battleMapConsole.field[eagle.getPosition().y()][eagle.getPosition().x()] = eagle.toString();
         }
 
         for (Player player : game.getPlayers()) {
             if (player.isCondition()) {
                 if (player.getTank().getMp().getDirection() == MoveDirections.LEFT) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.RIGHT) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.UP) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.DOWN) {
-                    BattleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 }
             }
         }
@@ -179,13 +179,13 @@ public class ConsoleField {
     }
 
     private void printField() {
-        for (String[] chars : BattleMapConsole.field) {
-            for (int j = 0; j < BattleMapConsole.field[0].length; j++) {
+        for (String[] chars : battleMapConsole.field) {
+            for (int j = 0; j < battleMapConsole.field[0].length; j++) {
                 System.out.print(chars[j] + " ");
             }
             System.out.println();
         }
-        for (int i = 0; i < BattleMapConsole.field[0].length; i++) {
+        for (int i = 0; i < battleMapConsole.field[0].length; i++) {
             System.out.print("- ");
         }
         System.out.println();
@@ -210,10 +210,10 @@ public class ConsoleField {
                 }
                 System.out.print(Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Enter the number player's:" + Colors.ANSI_RESET + " ");
                 numberOfPlayers = sc.nextInt();
-                    if (numberOfPlayers > 4) {
-                        throw new TankGameException("The number of players must be from 1 to 4.");
-                    }
-                    break;
+                if (numberOfPlayers > 4 || numberOfPlayers < 2) {
+                    throw new TankGameException("The number of players must be from 1 to 4.");
+                }
+                break;
             } catch (NumberFormatException e) {
                 System.out.println(Colors.ANSI_RED + "Error: Incorrect type of input value." + Colors.ANSI_RESET);
             } catch (TankGameException e) {
@@ -222,7 +222,6 @@ public class ConsoleField {
         }
         System.out.println();
     }
-
     private void messageAboutEnd() {
         System.out.println("End of the game");
     }

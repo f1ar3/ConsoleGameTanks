@@ -5,19 +5,21 @@ import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
 public class Eagle extends BattleFieldObject {
-    private boolean isAlive = true;
+    private int numberOfRespawn = 0;
     private int pointsForEagle = 3;
+
+    private final Position startPosition = new Position(getPosition().x(), getPosition().y());
 
     public Eagle(Position position) {
         super(position);
     }
 
-    public boolean isAlive() {
-        return isAlive;
+    public int getNumberOfRespawn() {
+        return numberOfRespawn;
     }
 
-    public void setAlive(boolean alive) {
-        isAlive = alive;
+    public void setNumberOfRespawn(int numberOfRespawn) {
+        this.numberOfRespawn = numberOfRespawn;
     }
 
     public int getPointsForEagle() {
@@ -26,6 +28,10 @@ public class Eagle extends BattleFieldObject {
 
     public void setPointsForEagle(int pointsForEagle) {
         this.pointsForEagle = pointsForEagle;
+    }
+
+    public Position getStartPosition() {
+        return startPosition;
     }
 
     @Override
