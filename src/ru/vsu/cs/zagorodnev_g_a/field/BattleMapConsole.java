@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-public class BattleMapConsole {
+public class BattleMapConsole implements Cloneable{
     private static final int[] random = {0, 1, 2, 3, 4};
     protected Game game;
 
@@ -166,5 +166,8 @@ public class BattleMapConsole {
             return array[randomIndex];
         }
         return array.length - 1;
+    }
+    public Object clone() throws CloneNotSupportedException {
+         return (BattleMapConsole) super.clone();
     }
 }

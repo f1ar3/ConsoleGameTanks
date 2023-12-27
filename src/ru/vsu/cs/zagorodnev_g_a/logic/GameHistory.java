@@ -16,13 +16,13 @@ public class GameHistory {
         return !executedMoves.isEmpty();
     }
 
-    public BattleMapConsole undo() {
+    public GameState undo() {
         if (!canUndo()) {
             return null;
         }
         GameState gameState = executedMoves.pop();
         undoMoves.push(gameState);
-        return gameState.getBattleMapConsole();
+        return gameState;
     }
 }
 

@@ -23,11 +23,13 @@ public class ConsoleField {
     GameState gameState;
     GameHistory gameHistory;
 
-    public ConsoleField() {
+    public ConsoleField() throws CloneNotSupportedException {
         gameParameters();
         game = new Game(this.height, this.width);
         battleMapConsole = new BattleMapConsole(this.game, this.height, this.width, this.numberOfPlayers);
-        updateField();
+        gameState = new GameState(battleMapConsole);
+        gameHistory = new GameHistory();
+        updateField(gameState);
         action();
     }
 
@@ -100,19 +102,24 @@ public class ConsoleField {
         return pa.isContinueGame();
     }
 
-    private void action(){
+    private void action() throws CloneNotSupportedException {
         boolean flag = false;
         while (true) {
+            BattleMapConsole clonedBattleMapConsole = (BattleMapConsole) battleMapConsole.clone();
+            GameState gameStateBeforeMove = new GameState(clonedBattleMapConsole);
             for (int i = 0; i < game.getPlayers().size(); i++) {
                 if (game.getPlayers().get(i).isCondition()) {
-                    if (game.isGameWasFinished()) return;
                     flag = true;
                     if (inputKey(i)) {
                         inputActions(game.getPlayers().get(i).getTank());
-                        game.victory(game.getPlayers());
                     }
-                    updateField();
+                    updateField(gameState);
                 }
+            }
+            System.out.println("Do you want replay the move?");
+            String response = sc.next();
+            if (response.equals("yes")) {
+                updateField(gameHistory.undo());
             }
             if (!flag) {
                 break;
@@ -138,42 +145,42 @@ public class ConsoleField {
     }
 
 
-    private void updateField() {
+    private void updateField(GameState gameState) {
 
         for (BattleFieldObject tile : game.getTiles()) {
-            battleMapConsole.field[tile.getPosition().y()][tile.getPosition().x()] = tile.toString();
+            gameState.getBattleMapConsole().field[tile.getPosition().y()][tile.getPosition().x()] = tile.toString();
         }
 
         for (BattleFieldObject indestructibleWall : game.getIndestructibleWalls()) {
-            battleMapConsole.field[indestructibleWall.getPosition().y()][indestructibleWall.getPosition().x()] = indestructibleWall.toString();
+            gameState.getBattleMapConsole().field[indestructibleWall.getPosition().y()][indestructibleWall.getPosition().x()] = indestructibleWall.toString();
         }
 
         for (BattleFieldObject wall : game.getWalls()) {
-            battleMapConsole.field[wall.getPosition().y()][wall.getPosition().x()] = wall.toString();
+            gameState.getBattleMapConsole().field[wall.getPosition().y()][wall.getPosition().x()] = wall.toString();
         }
 
         for (BattleFieldObject water : game.getWater()) {
-            battleMapConsole.field[water.getPosition().y()][water.getPosition().x()] = water.toString();
+            gameState.getBattleMapConsole().field[water.getPosition().y()][water.getPosition().x()] = water.toString();
         }
 
         for (BattleFieldObject forest : game.getForest()) {
-            battleMapConsole.field[forest.getPosition().y()][forest.getPosition().x()] = forest.toString();
+            gameState.getBattleMapConsole().field[forest.getPosition().y()][forest.getPosition().x()] = forest.toString();
         }
 
         for (BattleFieldObject eagle : game.getEagles()) {
-            battleMapConsole.field[eagle.getPosition().y()][eagle.getPosition().x()] = eagle.toString();
+            gameState.getBattleMapConsole().field[eagle.getPosition().y()][eagle.getPosition().x()] = eagle.toString();
         }
 
         for (Player player : game.getPlayers()) {
             if (player.isCondition()) {
                 if (player.getTank().getMp().getDirection() == MoveDirections.LEFT) {
-                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    gameState.getBattleMapConsole().field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.RIGHT) {
-                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    gameState.getBattleMapConsole().field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.UP) {
-                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    gameState.getBattleMapConsole().field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 } else if (player.getTank().getMp().getDirection() == MoveDirections.DOWN) {
-                    battleMapConsole.field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
+                    gameState.getBattleMapConsole().field[player.getTank().getPosition().y()][player.getTank().getPosition().x()] = player.getTank().toString();
                 }
             }
         }
