@@ -13,6 +13,8 @@ public class Tank extends MovableObject{
     private int pointsForKill = 1;
     private final Position startPosition = new Position(getPosition().x(), getPosition().y());
 
+    private boolean undoStep = false;
+
     public Tank(Position position, MoveParameters mp) {
         super(position, mp);
     }
@@ -27,6 +29,14 @@ public class Tank extends MovableObject{
 
     public void setFire(boolean fire) {
         isFire = fire;
+    }
+
+    public boolean isUndoStep() {
+        return undoStep;
+    }
+
+    public void setUndoStep(boolean undoStep) {
+        this.undoStep = undoStep;
     }
 
     public List<Bullet> getBullets() {

@@ -1,8 +1,7 @@
 package ru.vsu.cs.zagorodnev_g_a.logic;
 
-import ru.vsu.cs.zagorodnev_g_a.Main;
 import ru.vsu.cs.zagorodnev_g_a.field.Colors;
-import ru.vsu.cs.zagorodnev_g_a.field.ConsoleField;
+import ru.vsu.cs.zagorodnev_g_a.objects.EaglePositionFactory;
 import ru.vsu.cs.zagorodnev_g_a.objects.immovable.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
@@ -119,6 +118,14 @@ public class Game {
         this.eagles = eagles;
     }
 
+    private Position respawnPosition(int i) {
+        Position[] rp = new Position[] {
+            (EaglePositionFactory.respawnPosition(width / 4, height / 4)),
+            (EaglePositionFactory.respawnPosition(width - width / 4, height / 4)),
+            (EaglePositionFactory.respawnPosition(width - width / 4, height - height / 4)),
+            (EaglePositionFactory.respawnPosition(width / 4, height - height / 4))};
+        return rp[i];
+    }
 
     private void destroySeparatedObjects(List<BattleFieldObject> objects, int indexOfPlayer) {
         for (int i = 0; i < players.get(indexOfPlayer).getTank().getBullets().size(); i++) {
@@ -213,7 +220,6 @@ public class Game {
                     && !isCollision(players.get(numberOfPlayer).getTank(), water, changeX, changeY)
                     && !tanksCollision(players.get(numberOfPlayer), players.get(i), changeX, changeY) && numberOfPlayer != i) {
                 eagleCapture(players.get(numberOfPlayer).getTank(), eagles, changeX, changeY);
-                victory(players, eagles);
                 players.get(numberOfPlayer).getTank().move();
                 return;
             }
@@ -234,23 +240,10 @@ public class Game {
                 int numberOfRespawn = ((Eagle) eagle).getNumberOfRespawn();
                 tank.setPoints(tank.getPoints() + ((Eagle) eagle).getPointsForEagle());
                 updatePointsForEagle(tank);
-                switch (numberOfRespawn) {
-                    case (0):
-                        eagle.setPosition(new Position(width / 4, height / 4));
-                        ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
-                        break;
-                    case (1):
-                        eagle.setPosition(new Position(width - width / 4, height / 4));
-                        ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
-                        break;
-                    case (2):
-                        eagle.setPosition(new Position(width - width / 4, height - height / 4));
-                        ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
-                        break;
-                    case (3):
-                        eagle.setPosition(new Position(width / 4, height - height / 4));
-                        ((Eagle) eagle).setNumberOfRespawn(0);
-                        break;
+                eagle.setPosition(respawnPosition(numberOfRespawn));
+                ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
+                if (numberOfRespawn == 3) {
+                    ((Eagle) eagle).setNumberOfRespawn(0);
                 }
             }
         }
@@ -291,21 +284,19 @@ public class Game {
         eagles.clear();
     }
 
-    private void maxNumberOfPoints(List<Player> players) {
+    public void victory(List<Player> players) {
         int maxNumberOfPoints = 0;
         int indexOfPlayer = 0;
         for (int i = 0; i < players.size(); i++) {
-            System.out.println("Points of tank " + players.get(i).getTank().getColor() + " ^ " + players.get(i).getTank().getPoints() + Colors.ANSI_RESET);
             if (maxNumberOfPoints < players.get(i).getTank().getPoints()) {
                 maxNumberOfPoints = players.get(i).getTank().getPoints();
-                i = indexOfPlayer;
+                indexOfPlayer = i;
             }
         }
-        System.out.println("The winner is" + players.get(indexOfPlayer).getTank().getColor() + " ^ " + players.get(indexOfPlayer).getTank().getPoints() + Colors.ANSI_RESET);
-    }
-
-    public void victory(List<Player> players, List<BattleFieldObject> eagles) {
-
+        if (players.get(indexOfPlayer).getTank().getPoints() > 20) {
+            System.out.println("The winner is " + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET);
+            setGameWasFinished(true);
+        }
     }
 
     public void timerBulletRunning(int indexOfPlayer, int indexOfCurrBullet){

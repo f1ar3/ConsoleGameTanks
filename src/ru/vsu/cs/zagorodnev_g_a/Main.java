@@ -5,9 +5,7 @@ import ru.vsu.cs.zagorodnev_g_a.logic.Game;
 import ru.vsu.cs.zagorodnev_g_a.logic.TankGameException;
 
 public class Main {
-
     public static void main(String[] args) {
-
         new ConsoleField();
     }
 }

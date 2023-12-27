@@ -19,6 +19,7 @@ import java.util.Scanner;
 public class BattleMapConsole {
     private static final int[] random = {0, 1, 2, 3, 4};
     protected Game game;
+
     protected String[][] field;
     protected int height;
     protected int width;

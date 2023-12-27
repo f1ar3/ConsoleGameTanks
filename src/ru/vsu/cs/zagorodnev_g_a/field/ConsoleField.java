@@ -1,8 +1,7 @@
 package ru.vsu.cs.zagorodnev_g_a.field;
 
-import ru.vsu.cs.zagorodnev_g_a.logic.TankGameException;
+import ru.vsu.cs.zagorodnev_g_a.logic.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
-import ru.vsu.cs.zagorodnev_g_a.logic.Game;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.MoveDirections;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Tank;
@@ -16,14 +15,17 @@ public class ConsoleField {
     Game game;
     protected final Scanner sc = new Scanner(System.in);
 
-    private int height;
+    public int height;
     private int width;
     private int numberOfPlayers;
     BattleMapConsole battleMapConsole;
 
+    GameState gameState;
+    GameHistory gameHistory;
+
     public ConsoleField() {
         gameParameters();
-        game = new Game(height,width);
+        game = new Game(this.height, this.width);
         battleMapConsole = new BattleMapConsole(this.game, this.height, this.width, this.numberOfPlayers);
         updateField();
         action();
@@ -64,7 +66,6 @@ public class ConsoleField {
 
     private static class FirePlayerAction implements PlayerAction {
 
-
         @Override
         public void applyActionTo(Game g, int numPlayer) {
             g.fireButton(numPlayer);
@@ -104,9 +105,11 @@ public class ConsoleField {
         while (true) {
             for (int i = 0; i < game.getPlayers().size(); i++) {
                 if (game.getPlayers().get(i).isCondition()) {
+                    if (game.isGameWasFinished()) return;
                     flag = true;
                     if (inputKey(i)) {
                         inputActions(game.getPlayers().get(i).getTank());
+                        game.victory(game.getPlayers());
                     }
                     updateField();
                 }
