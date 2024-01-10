@@ -32,22 +32,24 @@ public class BattleMapConsole implements Serializable {
         this.width = width;
         this.numberOfPlayers = numberOfPlayers;
         this.field = new String[height][width];
+        factories = new ObjectFactory[]{
+                IndestructibleWall.createFactoryInstance(game),
+                Wall.createFactoryInstance(game),
+                Water.createFactoryInstance(game),
+                Forest.createFactoryInstance(game),
+                new ObjectFactory() {
+                    @Override
+                    public void createObject(Position position) {
+                        return;
+                    }
+                }
+        };
         initializeGame(game, height, width, numberOfPlayers);
     }
-    private final ObjectFactory[] factories = new ObjectFactory[]{
-            IndestructibleWall.FACTORY_INSTANCE,
-            Wall.FACTORY_INSTANCE,
-            Water.FACTORY_INSTANCE,
-            Forest.FACTORY_INSTANCE,
-            new ObjectFactory() {
-                @Override
-                public void createObject(Position position, Game game) {
-                    return;
-                }
-            }
-    };
+    private final ObjectFactory[] factories ;
 
     public void initializeGame(Game game, int height, int width, int numberOfPlayers) {
+
 
         setTiles(game, height, width);
         setIndestructibleWalls(game, height, width);
@@ -62,25 +64,25 @@ public class BattleMapConsole implements Serializable {
         for (int i = 1; i < height - 1; i++) {
             for (int j = 1; j < width - 1; j++) {
                 tile = new Tile(new Position(j, i));
-                game.getTiles().add(tile);
+                game.add(tile);
             }
         }
     }
     private void setIndestructibleWalls(Game game, int height, int width) {
         for (int i = 0; i < width; i++) {
-            factories[0].createObject(new Position(i, 0), game);
+            factories[0].createObject(new Position(i, 0));
         }
 
         for (int i = 0; i < width; i++) {
-            factories[0].createObject(new Position(i, height - 1), game);
+            factories[0].createObject(new Position(i, height - 1));
         }
 
         for (int i = 0; i < height; i++) {
-            factories[0].createObject(new Position(0, i), game);
+            factories[0].createObject(new Position(0, i));
         }
 
         for (int i = 0; i < height; i++) {
-            factories[0].createObject(new Position(width - 1, i), game);
+            factories[0].createObject(new Position(width - 1, i));
         }
     }
 
@@ -93,7 +95,7 @@ public class BattleMapConsole implements Serializable {
                     tank = new Tank(new Position(j, i), new MoveParameters(game.getVelocity()));
                     tank.getMp().setDirection(MoveDirections.LEFT);
                     tank.setColor(Colors.colorizeTank(currentNumberOfPlayers));
-                    game.getTanks().add(tank);
+                    game.add(tank);
                     currentNumberOfPlayers++;
                 }
             }
@@ -105,7 +107,7 @@ public class BattleMapConsole implements Serializable {
             for (int j = 1; j < width - 1; j++) {
                 setEagle(game, height, width, i, j);
                 if (!isTileFree(height, width, i, j)) {continue;}
-                factories[getRandom(random)].createObject(new Position(j, i), game);
+                factories[getRandom(random)].createObject(new Position(j, i));
             }
         }
     }
@@ -114,7 +116,7 @@ public class BattleMapConsole implements Serializable {
         Eagle eagle;
         if (i == height - height / 4 && j == width / 4) {
             eagle = new Eagle(new Position(j,i));
-            game.getEagles().add(eagle);
+            game.add(eagle);
         }
     }
 
@@ -123,7 +125,7 @@ public class BattleMapConsole implements Serializable {
         for (Tank tanks : game.getTanks()) {
             player = new Player(tanks, true);
             player.getTank().setBullets(new ArrayList<>());
-            game.getPlayers().add(player);
+            game.add(player);
         }
     }
 
@@ -131,7 +133,7 @@ public class BattleMapConsole implements Serializable {
         Turn turn;
         for (Player value : game.getPlayers()) {
             turn = new Turn(false, value.getTank().getMp().getDirection());
-            game.getTurns().add(turn);
+            game.add(turn);
         }
     }
 

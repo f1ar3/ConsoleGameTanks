@@ -6,5 +6,5 @@ import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 import java.io.Serializable;
 
 public interface ObjectFactory extends Serializable {
-    void createObject(Position position, Game game);
+    void createObject(Position position);
 }

@@ -114,12 +114,13 @@ public class ConsoleField implements Serializable {
         while (true) {
             clonedGame = game.deepCopy();
             gameHistory.saveMove(clonedGame);
-            for (int i = 0; i < game.getPlayers().size(); i++) {
-                if (game.getPlayers().get(i).isCondition()) {
+            int i = 0;
+            for (Player p : game.getPlayers()) {
+                if (p.isCondition()) {
                     flag = true;
-                    if (inputKey(i)) {
-                        inputActions(game.getPlayers().get(i).getTank());
-                        game.victory(game.getPlayers());
+                    if (inputKey(i++)) {
+                        inputActions(p.getTank());
+                        game.victory(p);
                         if(game.isGameWasFinished()) {return;}
                     }
                     updateField(game);

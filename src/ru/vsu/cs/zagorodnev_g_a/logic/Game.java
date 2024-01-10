@@ -4,6 +4,7 @@ import ru.vsu.cs.zagorodnev_g_a.Main;
 import ru.vsu.cs.zagorodnev_g_a.field.BattleMapConsole;
 import ru.vsu.cs.zagorodnev_g_a.field.Colors;
 import ru.vsu.cs.zagorodnev_g_a.field.ConsoleField;
+import ru.vsu.cs.zagorodnev_g_a.logic.addables.*;
 import ru.vsu.cs.zagorodnev_g_a.objects.EaglePositionFactory;
 import ru.vsu.cs.zagorodnev_g_a.objects.immovable.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
@@ -17,7 +18,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Game implements Serializable {
+public class Game implements Serializable, AddTile, AddWall, AddIndestructibleWall, AddForest, AddWater, AddTurn, AddPlayer, AddEagle {
     private final int height;
     private final int width;
     public Game(int height, int width) {
@@ -38,12 +39,16 @@ public class Game implements Serializable {
     private boolean condition;
     private boolean gameWasFinished = false;
 
-    public List<Turn> getTurns() {
+    public Iterable<Turn> getTurns() {
         return turns;
     }
 
     public void setTurns(List<Turn> turns) {
         this.turns = turns;
+    }
+
+    public void add(Turn turn) {
+        turns.add(turn);
     }
 
     public int getVelocity() {
@@ -58,7 +63,7 @@ public class Game implements Serializable {
         this.condition = condition;
     }
 
-    public List<Player> getPlayers() {
+    public Iterable<Player> getPlayers() {
         return players;
     }
 
@@ -66,29 +71,48 @@ public class Game implements Serializable {
         this.players = players;
     }
 
-    public List<Tank> getTanks() {
+    public void add(Player player) {
+        players.add(player);
+    }
+
+    public Iterable<Tank> getTanks() {
         return tanks;
     }
 
     public void setTanks(List<Tank> tanks) {
         this.tanks = tanks;
     }
-    public List<Tile> getTiles() {return tiles;}
+
+    public void add(Tank tank) {
+        tanks.add(tank);
+    }
+
+    public Iterable<Tile> getTiles() {return tiles;}
+    public void add(Tile t) {
+        tiles.add(t);
+    }
     public void setTiles(List<Tile> tiles) {this.tiles = tiles;}
-    public List<Wall> getWalls() {
+    public Iterable<Wall> getWalls() {
         return walls;
+    }
+    public void add(Wall w) {
+        walls.add(w);
     }
 
     public void setWalls(List<Wall> walls) {
         this.walls = walls;
     }
 
-    public List<IndestructibleWall> getIndestructibleWalls() {
+    public Iterable<IndestructibleWall> getIndestructibleWalls() {
         return indestructibleWalls;
     }
 
     public void setIndestructibleWalls(List<IndestructibleWall> indestructibleWalls) {
         this.indestructibleWalls = indestructibleWalls;
+    }
+
+    public void add(IndestructibleWall indestructibleWall) {
+        indestructibleWalls.add(indestructibleWall);
     }
 
     public boolean isGameWasFinished() {
@@ -99,7 +123,7 @@ public class Game implements Serializable {
         this.gameWasFinished = gameWasFinished;
     }
 
-    public List<Water> getWater() {
+    public Iterable<Water> getWater() {
         return water;
     }
 
@@ -107,7 +131,11 @@ public class Game implements Serializable {
         this.water = water;
     }
 
-    public List<Forest> getForest() {
+    public void add(Water wat) {
+        water.add(wat);
+    }
+
+    public Iterable<Forest> getForest() {
         return forest;
     }
 
@@ -115,12 +143,20 @@ public class Game implements Serializable {
         this.forest = forest;
     }
 
-    public List<Eagle> getEagles() {
+    public void add(Forest f) {
+        forest.add(f);
+    }
+
+    public Iterable<Eagle> getEagles() {
         return eagles;
     }
 
     public void setEagles(List<Eagle> eagles) {
         this.eagles = eagles;
+    }
+
+    public void add(Eagle eagle) {
+        eagles.add(eagle);
     }
 
     public Game deepCopy() {
@@ -269,17 +305,9 @@ public class Game implements Serializable {
         }
     }
 
-    public void victory(List<Player> players) {
-        int maxNumberOfPoints = 0;
-        int indexOfPlayer = 0;
-        for (int i = 0; i < players.size(); i++) {
-            if (maxNumberOfPoints < players.get(i).getTank().getPoints()) {
-                maxNumberOfPoints = players.get(i).getTank().getPoints();
-                indexOfPlayer = i;
-            }
-        }
-        if (players.get(indexOfPlayer).getTank().getPoints() > 20) {
-            System.out.println("The winner is " + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET);
+    public void victory(Player player) {
+        if (player.getTank().getPoints() > 20) {
+            System.out.println("The winner is " + player.getTank().getColor() + Colors.ANSI_BLACK + " ^ " + Colors.ANSI_RESET);
             setGameWasFinished(true);
         }
     }
