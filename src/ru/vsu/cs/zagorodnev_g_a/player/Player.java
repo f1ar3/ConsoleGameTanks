@@ -1,8 +1,11 @@
 package ru.vsu.cs.zagorodnev_g_a.player;
 
+import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Tank;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable {
     private final Tank tank;
     private boolean condition;
 
@@ -21,5 +24,9 @@ public class Player {
 
     public void setCondition(boolean condition) {
         this.condition = condition;
+    }
+
+    public Player clone() throws CloneNotSupportedException {
+        return new Player(this.tank, this.condition);
     }
 }

@@ -1,6 +1,8 @@
 package ru.vsu.cs.zagorodnev_g_a.objects.movable;
 
-public enum MoveDirections {
+import java.io.Serializable;
+
+public enum MoveDirections implements Serializable {
     UP(0, -1),
     DOWN(0, 1),
     LEFT(-1, 0),

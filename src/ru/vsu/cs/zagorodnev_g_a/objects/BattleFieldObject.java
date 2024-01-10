@@ -2,7 +2,9 @@ package ru.vsu.cs.zagorodnev_g_a.objects;
 
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
-public class BattleFieldObject implements Positionable {
+import java.io.Serializable;
+
+public class BattleFieldObject implements Positionable, Serializable {
     protected Position position;
     protected final boolean collision;
 

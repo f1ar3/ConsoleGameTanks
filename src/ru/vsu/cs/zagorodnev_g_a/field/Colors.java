@@ -1,6 +1,8 @@
 package ru.vsu.cs.zagorodnev_g_a.field;
 
-public class Colors {
+import java.io.Serializable;
+
+public class Colors implements Serializable {
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";

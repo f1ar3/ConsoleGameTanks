@@ -1,6 +1,9 @@
 package ru.vsu.cs.zagorodnev_g_a.logic;
 
+import ru.vsu.cs.zagorodnev_g_a.Main;
+import ru.vsu.cs.zagorodnev_g_a.field.BattleMapConsole;
 import ru.vsu.cs.zagorodnev_g_a.field.Colors;
+import ru.vsu.cs.zagorodnev_g_a.field.ConsoleField;
 import ru.vsu.cs.zagorodnev_g_a.objects.EaglePositionFactory;
 import ru.vsu.cs.zagorodnev_g_a.objects.immovable.*;
 import ru.vsu.cs.zagorodnev_g_a.player.Player;
@@ -10,24 +13,26 @@ import ru.vsu.cs.zagorodnev_g_a.objects.movable.MoveDirections;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Tank;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Game {
+public class Game implements Serializable {
     private final int height;
     private final int width;
     public Game(int height, int width) {
         this.height = height;
         this.width = width;
     }
+
     private List<Player> players = new ArrayList<>();
-    private List<BattleFieldObject> tanks = new ArrayList<>();
-    private List<BattleFieldObject> tiles = new ArrayList<>();
-    private List<BattleFieldObject> walls = new ArrayList<>();
-    private List<BattleFieldObject> indestructibleWalls = new ArrayList<>();
-    private List<BattleFieldObject> water = new ArrayList<>();
-    private List<BattleFieldObject> forest = new ArrayList<>();
-    private List<BattleFieldObject> eagles = new ArrayList<>();
+    private List<Tank> tanks = new ArrayList<>();
+    private List<Tile> tiles = new ArrayList<>();
+    private List<Wall> walls = new ArrayList<>();
+    private List<IndestructibleWall> indestructibleWalls = new ArrayList<>();
+    private List<Water> water = new ArrayList<>();
+    private List<Forest> forest = new ArrayList<>();
+    private List<Eagle> eagles = new ArrayList<>();
     private List<Turn> turns = new ArrayList<>();
     private final int velocity = 1;
     private boolean condition;
@@ -61,28 +66,28 @@ public class Game {
         this.players = players;
     }
 
-    public List<BattleFieldObject> getTanks() {
+    public List<Tank> getTanks() {
         return tanks;
     }
 
-    public void setTanks(List<BattleFieldObject> tanks) {
+    public void setTanks(List<Tank> tanks) {
         this.tanks = tanks;
     }
-    public List<BattleFieldObject> getTiles() {return tiles;}
-    public void setTiles(List<BattleFieldObject> tiles) {this.tiles = tiles;}
-    public List<BattleFieldObject> getWalls() {
+    public List<Tile> getTiles() {return tiles;}
+    public void setTiles(List<Tile> tiles) {this.tiles = tiles;}
+    public List<Wall> getWalls() {
         return walls;
     }
 
-    public void setWalls(List<BattleFieldObject> walls) {
+    public void setWalls(List<Wall> walls) {
         this.walls = walls;
     }
 
-    public List<BattleFieldObject> getIndestructibleWalls() {
+    public List<IndestructibleWall> getIndestructibleWalls() {
         return indestructibleWalls;
     }
 
-    public void setIndestructibleWalls(List<BattleFieldObject> indestructibleWalls) {
+    public void setIndestructibleWalls(List<IndestructibleWall> indestructibleWalls) {
         this.indestructibleWalls = indestructibleWalls;
     }
 
@@ -94,48 +99,63 @@ public class Game {
         this.gameWasFinished = gameWasFinished;
     }
 
-    public List<BattleFieldObject> getWater() {
+    public List<Water> getWater() {
         return water;
     }
 
-    public void setWater(List<BattleFieldObject> water) {
+    public void setWater(List<Water> water) {
         this.water = water;
     }
 
-    public List<BattleFieldObject> getForest() {
+    public List<Forest> getForest() {
         return forest;
     }
 
-    public void setForest(List<BattleFieldObject> forest) {
+    public void setForest(List<Forest> forest) {
         this.forest = forest;
     }
 
-    public List<BattleFieldObject> getEagles() {
+    public List<Eagle> getEagles() {
         return eagles;
     }
 
-    public void setEagles(List<BattleFieldObject> eagles) {
+    public void setEagles(List<Eagle> eagles) {
         this.eagles = eagles;
+    }
+
+    public Game deepCopy() {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(this);
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream in = new ObjectInputStream(bis);
+            return (Game) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private Position respawnPosition(int i) {
         Position[] rp = new Position[] {
-            (EaglePositionFactory.respawnPosition(width / 4, height / 4)),
-            (EaglePositionFactory.respawnPosition(width - width / 4, height / 4)),
-            (EaglePositionFactory.respawnPosition(width - width / 4, height - height / 4)),
-            (EaglePositionFactory.respawnPosition(width / 4, height - height / 4))};
+                (EaglePositionFactory.respawnPosition(width / 4, height / 4)),
+                (EaglePositionFactory.respawnPosition(width - width / 4 - 1, height / 4)),
+                (EaglePositionFactory.respawnPosition(width - width / 4 - 1, height - height / 4)),
+                (EaglePositionFactory.respawnPosition(width / 4, height - height / 4))};
         return rp[i];
     }
 
-    private void destroySeparatedObjects(List<BattleFieldObject> objects, int indexOfPlayer) {
-        for (int i = 0; i < players.get(indexOfPlayer).getTank().getBullets().size(); i++) {
+    private static void destroySeparatedObjects(List<? extends BattleFieldObject> objects, Player player) {
+        for (int i = 0; i < player.getTank().getBullets().size(); i++) {
             for (BattleFieldObject object : objects) {
-                if (object.intersects(players.get(indexOfPlayer).getTank().getBullets().get(i).getPosition())) {
+                if (object.intersects(player.getTank().getBullets().get(i).getPosition())) {
                     if (object.isDestroyable()) {
                         objects.remove(object);
-                        messageAboutDestroyedObject(indexOfPlayer);
+                        messageAboutDestroyedObject(player);
                     }
-                    players.get(indexOfPlayer).getTank().getBullets().remove(i);
+                    player.getTank().getBullets().remove(i);
                     break;
                 }
             }
@@ -156,8 +176,8 @@ public class Game {
                         }
                     }
                 }
-                destroySeparatedObjects(walls, i);
-                destroySeparatedObjects(indestructibleWalls, i);
+                destroySeparatedObjects(walls, players.get(i));
+                destroySeparatedObjects(indestructibleWalls, players.get(i));
             }
         }
 
@@ -203,7 +223,7 @@ public class Game {
         return false;
     }
 
-    private boolean isCollision(Tank tank, List<BattleFieldObject> list, int changeX, int changeY) {
+    private static boolean isCollision(Tank tank, List<? extends BattleFieldObject> list, int changeX, int changeY) {
         for (BattleFieldObject object : list) {
             if (object.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))
                     && object.isCollision()) {
@@ -234,54 +254,19 @@ public class Game {
         return false;
     }
 
-    private void eagleCapture(Tank tank, List<BattleFieldObject> eagles, int changeX, int changeY) {
-        for (BattleFieldObject eagle : eagles) {
+    private void eagleCapture(Tank tank, List<Eagle> eagles, int changeX, int changeY) {
+        for (Eagle eagle : eagles) {
             if (eagle.intersects(new Position(tank.getPosition().x() + changeX, tank.getPosition().y() + changeY))) {
-                int numberOfRespawn = ((Eagle) eagle).getNumberOfRespawn();
-                tank.setPoints(tank.getPoints() + ((Eagle) eagle).getPointsForEagle());
+                int numberOfRespawn = eagle.getNumberOfRespawn();
+                tank.setPoints(tank.getPoints() + eagle.getPointsForEagle());
                 updatePointsForEagle(tank);
                 eagle.setPosition(respawnPosition(numberOfRespawn));
-                ((Eagle) eagle).setNumberOfRespawn(numberOfRespawn + 1);
+                eagle.setNumberOfRespawn(numberOfRespawn + 1);
                 if (numberOfRespawn == 3) {
-                    ((Eagle) eagle).setNumberOfRespawn(0);
+                    eagle.setNumberOfRespawn(0);
                 }
             }
         }
-    }
-
-    private boolean isInWater(Tank tank, List<BattleFieldObject> list) {
-        for (BattleFieldObject object : list) {
-            if (object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void backToStartPosition(int numberOfPlayer) {
-        if (isInWater(players.get(numberOfPlayer).getTank(), water)) {
-            players.get(numberOfPlayer).getTank().setPosition(new Position(players.get(numberOfPlayer).getTank().getStartPosition().x(), players.get(numberOfPlayer).getTank().getStartPosition().y()));
-            messageAboutWater(numberOfPlayer);
-        }
-    }
-
-    private boolean isInForest(Tank tank, List<BattleFieldObject> list) {
-        for (BattleFieldObject object : list) {
-            if (object.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void restart(){
-        players.clear();
-        tanks.clear();
-        walls.clear();
-        indestructibleWalls.clear();
-        water.clear();
-        forest.clear();
-        eagles.clear();
     }
 
     public void victory(List<Player> players) {
@@ -298,6 +283,42 @@ public class Game {
             setGameWasFinished(true);
         }
     }
+
+    private boolean isInWater(Tank tank, List<Water> waters) {
+        for (Water water : waters) {
+            if (water.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void backToStartPosition(int numberOfPlayer) {
+        if (isInWater(players.get(numberOfPlayer).getTank(), water)) {
+            players.get(numberOfPlayer).getTank().setPosition(new Position(players.get(numberOfPlayer).getTank().getStartPosition().x(), players.get(numberOfPlayer).getTank().getStartPosition().y()));
+            messageAboutWater(numberOfPlayer);
+        }
+    }
+
+    private boolean isInForest(Tank tank, List<Forest> forests) {
+        for (Forest forest : forests) {
+            if (forest.intersects(new Position(tank.getPosition().x(), tank.getPosition().y()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void restart(){
+        players.clear();
+        tanks.clear();
+        walls.clear();
+        indestructibleWalls.clear();
+        water.clear();
+        forest.clear();
+        eagles.clear();
+    }
+
 
     public void timerBulletRunning(int indexOfPlayer, int indexOfCurrBullet){
         players.get(indexOfPlayer).getTank().getBullets().get(indexOfCurrBullet).move();
@@ -334,8 +355,8 @@ public class Game {
                 + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " : " + tank.getPoints() + Colors.ANSI_RESET + "\n");
     }
 
-    private void messageAboutDestroyedObject(int indexOfPlayer) {
-        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + players.get(indexOfPlayer).getTank().getColor() + Colors.ANSI_BLACK + " ^ "
+    private static void messageAboutDestroyedObject(Player player) {
+        System.out.println("\n" + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + "Tank " + Colors.ANSI_RESET + player.getTank().getColor() + Colors.ANSI_BLACK + " ^ "
                 + Colors.ANSI_RESET + Colors.CYAN_BACKGROUND + Colors.ANSI_BLACK + " destroyed the object." + Colors.ANSI_RESET + "\n");
     }
 

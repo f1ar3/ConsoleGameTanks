@@ -11,20 +11,20 @@ import ru.vsu.cs.zagorodnev_g_a.objects.movable.MoveParameters;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Tank;
 
+import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 
-public class BattleMapConsole implements Cloneable{
+public class BattleMapConsole implements Serializable {
     private static final int[] random = {0, 1, 2, 3, 4};
     protected Game game;
-
     protected String[][] field;
     protected int height;
     protected int width;
     protected int numberOfPlayers;
     private int currentNumberOfPlayers = 0;
+
+    private transient static final long serialVersionUID = 1L;
 
     public BattleMapConsole(Game game, int height, int width, int numberOfPlayers) {
         this.game = game;
@@ -32,7 +32,6 @@ public class BattleMapConsole implements Cloneable{
         this.width = width;
         this.numberOfPlayers = numberOfPlayers;
         this.field = new String[height][width];
-        setTiles(game, height, width);
         initializeGame(game, height, width, numberOfPlayers);
     }
     private final ObjectFactory[] factories = new ObjectFactory[]{
@@ -42,14 +41,15 @@ public class BattleMapConsole implements Cloneable{
             Forest.FACTORY_INSTANCE,
             new ObjectFactory() {
                 @Override
-                public BattleFieldObject createObject(Position position) {
-                    return null;
+                public void createObject(Position position, Game game) {
+                    return;
                 }
             }
     };
 
     public void initializeGame(Game game, int height, int width, int numberOfPlayers) {
 
+        setTiles(game, height, width);
         setIndestructibleWalls(game, height, width);
         setObjects(game, height, width);
         setTanks(game, height, width, numberOfPlayers);
@@ -67,27 +67,23 @@ public class BattleMapConsole implements Cloneable{
         }
     }
     private void setIndestructibleWalls(Game game, int height, int width) {
-        BattleFieldObject indestructibleWall;
         for (int i = 0; i < width; i++) {
-            indestructibleWall = factories[0].createObject(new Position(i, 0));
-            game.getIndestructibleWalls().add(indestructibleWall);
+            factories[0].createObject(new Position(i, 0), game);
         }
 
         for (int i = 0; i < width; i++) {
-            indestructibleWall = factories[0].createObject(new Position(i, height - 1));
-            game.getIndestructibleWalls().add(indestructibleWall);
+            factories[0].createObject(new Position(i, height - 1), game);
         }
 
         for (int i = 0; i < height; i++) {
-            indestructibleWall = factories[0].createObject(new Position(0, i));
-            game.getIndestructibleWalls().add(indestructibleWall);
+            factories[0].createObject(new Position(0, i), game);
         }
 
         for (int i = 0; i < height; i++) {
-            indestructibleWall = factories[0].createObject(new Position(width - 1, i));
-            game.getIndestructibleWalls().add(indestructibleWall);
+            factories[0].createObject(new Position(width - 1, i), game);
         }
     }
+
     private void setTanks(Game game, int height, int width, int numberOfPlayers) {
         Tank tank;
         for (int i = 1; i < height / 2 + 1 ; i += 2) {
@@ -109,16 +105,7 @@ public class BattleMapConsole implements Cloneable{
             for (int j = 1; j < width - 1; j++) {
                 setEagle(game, height, width, i, j);
                 if (!isTileFree(height, width, i, j)) {continue;}
-                BattleFieldObject object = factories[getRandom(random)].createObject(new Position(j, i));
-                if (object instanceof Wall) {
-                    game.getWalls().add(object);
-                } else if (object instanceof Water) {
-                    game.getWater().add(object);
-                } else if (object instanceof IndestructibleWall) {
-                    game.getIndestructibleWalls().add(object);
-                } else if (object instanceof Forest) {
-                    game.getForest().add(object);
-                }
+                factories[getRandom(random)].createObject(new Position(j, i), game);
             }
         }
     }
@@ -133,8 +120,8 @@ public class BattleMapConsole implements Cloneable{
 
     private void setPlayers(Game game) {
         Player player;
-        for (BattleFieldObject tanks : game.getTanks()) {
-            player = new Player((Tank) tanks, true);
+        for (Tank tanks : game.getTanks()) {
+            player = new Player(tanks, true);
             player.getTank().setBullets(new ArrayList<>());
             game.getPlayers().add(player);
         }
@@ -166,8 +153,5 @@ public class BattleMapConsole implements Cloneable{
             return array[randomIndex];
         }
         return array.length - 1;
-    }
-    public Object clone() throws CloneNotSupportedException {
-         return (BattleMapConsole) super.clone();
     }
 }

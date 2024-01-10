@@ -1,10 +1,13 @@
 package ru.vsu.cs.zagorodnev_g_a.objects.immovable;
 
+import ru.vsu.cs.zagorodnev_g_a.field.BattleMapConsole;
 import ru.vsu.cs.zagorodnev_g_a.field.Colors;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 import ru.vsu.cs.zagorodnev_g_a.objects.movable.Position;
 
-public class Eagle extends BattleFieldObject {
+import java.io.Serializable;
+
+public class Eagle extends BattleFieldObject implements Serializable {
     private int numberOfRespawn = 0;
     private int pointsForEagle = 3;
 
@@ -37,5 +40,12 @@ public class Eagle extends BattleFieldObject {
     @Override
     public String toString() {
         return Colors.WHITE_BACKGROUND_BRIGHT  + Colors.ANSI_BLACK + " E " + Colors.ANSI_RESET;
+    }
+
+    public BattleFieldObject clone() throws CloneNotSupportedException {
+        Eagle clonedEagle = new Eagle(this.position);
+        clonedEagle.setNumberOfRespawn(this.getNumberOfRespawn());
+        clonedEagle.setPointsForEagle(this.getPointsForEagle());
+        return clonedEagle;
     }
 }

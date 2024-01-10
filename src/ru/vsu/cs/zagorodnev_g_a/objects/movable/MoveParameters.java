@@ -1,6 +1,8 @@
 package ru.vsu.cs.zagorodnev_g_a.objects.movable;
 
-public class MoveParameters {
+import java.io.Serializable;
+
+public class MoveParameters implements Serializable {
     private MoveDirections direction = MoveDirections.NONE;
     private final int velocity;
 

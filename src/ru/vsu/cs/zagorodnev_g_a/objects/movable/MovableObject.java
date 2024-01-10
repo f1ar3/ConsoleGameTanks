@@ -3,7 +3,9 @@ package ru.vsu.cs.zagorodnev_g_a.objects.movable;
 import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 import ru.vsu.cs.zagorodnev_g_a.objects.Destroyable;
 
-    public class MovableObject extends BattleFieldObject implements Destroyable {
+import java.io.Serializable;
+
+public class MovableObject extends BattleFieldObject implements Destroyable, Serializable {
         private MoveParameters mp;
 
         public MovableObject(Position position, MoveParameters mp) {

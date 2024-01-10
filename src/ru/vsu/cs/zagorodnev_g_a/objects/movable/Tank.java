@@ -1,11 +1,13 @@
 package ru.vsu.cs.zagorodnev_g_a.objects.movable;
 
 import ru.vsu.cs.zagorodnev_g_a.field.Colors;
+import ru.vsu.cs.zagorodnev_g_a.objects.BattleFieldObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tank extends MovableObject{
+public class Tank extends MovableObject implements Serializable {
     private boolean isFire = false;
     private List<Bullet> bullets = new ArrayList<>();
     private String color;
@@ -13,10 +15,30 @@ public class Tank extends MovableObject{
     private int pointsForKill = 1;
     private final Position startPosition = new Position(getPosition().x(), getPosition().y());
 
-    private boolean undoStep = false;
-
     public Tank(Position position, MoveParameters mp) {
         super(position, mp);
+    }
+
+    public static class TankBackUp extends Tank{
+
+        private Position pos;
+
+        private int points;
+
+        private TankBackUp(Position pos, MoveParameters mp, int points) {
+            super(pos, mp);
+            this.pos = pos;
+            this.points = points;
+        }
+    }
+
+    public TankBackUp createBackUp() {
+        return new TankBackUp(new Position(this.getX(), this.getY()), this.getMp(), getPoints());
+    }
+
+    public void loadBackUp(TankBackUp backUp) {
+        this.points = backUp.points;
+        this.position = new Position(backUp.pos.x(), backUp.pos.y());
     }
 
     public Position getStartPosition() {
@@ -29,14 +51,6 @@ public class Tank extends MovableObject{
 
     public void setFire(boolean fire) {
         isFire = fire;
-    }
-
-    public boolean isUndoStep() {
-        return undoStep;
-    }
-
-    public void setUndoStep(boolean undoStep) {
-        this.undoStep = undoStep;
     }
 
     public List<Bullet> getBullets() {
@@ -100,5 +114,15 @@ public class Tank extends MovableObject{
         return this.getColor() + Colors.ANSI_BLACK + " v " + Colors.ANSI_RESET;
         }
         return null;
+    }
+
+    public BattleFieldObject clone() throws CloneNotSupportedException {
+        Tank clonedTank = new Tank(this.position, this.getMp());
+        clonedTank.setPoints(this.getPoints());
+        clonedTank.setBullets(this.bullets);
+        clonedTank.setColor(this.getColor());
+        clonedTank.setFire(this.isFire);
+        clonedTank.setPointsForKill(this.getPointsForKill());
+        return clonedTank;
     }
 }
